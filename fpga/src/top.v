@@ -30,7 +30,7 @@ module top(
     output int_n,
     output busdir_n,
     output wait_n,
-    output datadir,
+    output datadir_n,
 
     inout [7:0] cd,
 
@@ -401,6 +401,8 @@ pinfilter (
     .dout(wr_n_w),
     .ena(1)
 );
+
+wire datadir;
 
 wire [15:0] addrmux_w;
 wire [7:0] cdin_w;
@@ -1420,12 +1422,16 @@ wire busdir_cs_w;
 wire vdp_rd_n = 1'b1;
 `endif
 
+
 assign busdir_cs_w = (mmapper_busreq_w || ~vdp_rd_n) ? 1 : 0;
 assign iord_w = (mmapper_busreq_w || ~vdp_rd_n) ? 1 : 0;
 assign busdir_n = ~iord_w; // io port without sltsl
 
 assign datadir = rgb_done == 0 ? 0 : ((~sltsl_n_w || busdir_cs_w) && ~rd_n_w) ? 0 : 1;
 assign cd = rgb_done == 0 ? { rgb, rgb, rgb, rgb, rgb, rgb, rgb, rgb } : datadir ? 8'bzzzzzzzz : ff_cdout;
+assign datadir_n = ~datadir;
+
+
 wire bus_idle_w;
 assign bus_idle_w = &msel_n || ~flash_idle_w; // read/write only when bus is idling to avoid getting corrupt addresses
 
